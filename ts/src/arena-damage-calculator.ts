@@ -34,7 +34,7 @@ export class ArenaDamageCalculator {
           adv.push(h);
         }
       } 
-    } else {    // Hero is of type water
+    } else {
       for(const h of defenders) {
         if (h.lp <= 0) { continue; }
         if (h.element === HeroElement.Fire) {
@@ -75,7 +75,7 @@ export class ArenaDamageCalculator {
       if(adv.find(h => h === attacked)) {
         dmg = dmg + dmg * 20/100
       } else if (eq.find(h => h === attacked)) {
-        dmg = dmg + 0
+        // code smell
       } else {
         dmg = dmg - dmg * 20/100
       }
