@@ -58,6 +58,7 @@ export class ArenaDamageCalculator {
     }
 
     // BUFFS
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     if(attacker.buffs.includes(Buff.Attack as any)) {
       if (c) {
         dmg += (attacker.pow * 0.25 + (0.5 + attacker.leth/ 5000) * attacker.pow * 0.25) * (1-attacked.def/7500)

@@ -3,16 +3,12 @@ import { HeroElement } from './model/hero-element';
 import { Hero } from './model/hero';
 import { Buff } from './model/buff';
 
+// TESTS ELEMENTS
 describe("Arena damage calculator", function() {
   let calculator: ArenaDamageCalculator;
-  let fireAttacker: Hero;
-  let waterDefender: Hero;
-  let defenders: Hero[];
 
   beforeEach(() => { 
-    // Initialize the calculator
     calculator = new ArenaDamageCalculator();
-
   });
 
   it('should calculate damage correctly for an attacker of each type attacking a defender of each type', () => {
@@ -38,7 +34,7 @@ describe("Arena damage calculator", function() {
                    (attackerElement === HeroElement.Fire && defenderElement === HeroElement.Water) ||
                    (attackerElement === HeroElement.Earth && defenderElement === HeroElement.Fire)) {
           expectedDamage *= 0.8; // -20% for disadvantage
-        }else if(attackerElement === defenderElement){
+        } else if(attackerElement === defenderElement){
           expectedDamage = power; // No change to damage, it's a neutral
         }
         // Checks if the defender's LP after the attack is as expected.
@@ -49,21 +45,16 @@ describe("Arena damage calculator", function() {
       });
     });
   });
-  
 });
-=======
-import { Hero } from './model/hero';
-import { HeroElement } from './model/hero-element';
-import { Buff } from './model/buff';
 
-
-describe("Testing behavior when attacker has an attack buff and defender has a defense buff", function() {
+// TESTS BUFF
+describe("Testing behavior when attacker has an attack buff and defender has a defense buff", function () {
   let calculator: ArenaDamageCalculator;
   let attacker: Hero;
   let defender: Hero;
   let defenders: Hero[];
   
-  beforeEach(() => { 
+  beforeEach(() => {
     // Initialize the calculator
     calculator = new ArenaDamageCalculator();
 
@@ -92,7 +83,7 @@ describe("Testing behavior when attacker has an attack buff and defender has a d
     calculator.computeDamage(attacker, defenders);
 
     // Calculating expected damage considering buffs
-    let expectedDamage = attacker.pow * 1.25 * 0.75;
+    const expectedDamage = attacker.pow * 1.25 * 0.75;
   
     expect(defender.lp).toBeLessThan(initialDefenderLP - expectedDamage);
   });
@@ -116,4 +107,58 @@ describe("Testing behavior when attacker has an attack buff and defender has a d
 
     expect(defender.lp).toBeLessThan(initialDefenderLP - expectedDamage);
 
+  });
 });
+
+// TEST CRITICAL HIT 
+describe("Critical chance applies to Attacker damage output", function () {
+  // Initialize
+  let calculator: ArenaDamageCalculator;
+  let attacker: Hero;
+  let defender: Hero;
+  let defenders: Hero[];
+
+  // PLAN
+  beforeEach(() => {
+    calculator = new ArenaDamageCalculator();
+    attacker = new Hero(HeroElement.Earth, 100, 50, 50, 100, 1000); // 100% Critical chance
+    defender = new Hero(HeroElement.Earth, 100, 70, 75, 50, 1000); // Same element, 0% defense
+    defenders = [defender];
+  })
+
+  // ACT
+  it("should apply critical damage according to stats", () => {
+    const expectedAttackerDmg = 149 // à vérif
+    const initialDefenderLP = defender.lp
+    const toBeDefenderLP = initialDefenderLP - expectedAttackerDmg
+    calculator.computeDamage(attacker, defenders)
+
+    // ASSERT
+    expect(defender.lp).toBe(toBeDefenderLP)
+  })
+});
+
+// TEST LIFE POINTS >= 0
+describe("Hero life points shouldn't be negative", function () {
+  // Initialize
+  let calculator: ArenaDamageCalculator;
+  let attacker: Hero;
+  let defender: Hero;
+  let defenders: Hero[];
+
+  // PLAN
+  beforeEach(() => { 
+    calculator = new ArenaDamageCalculator();
+    attacker = new Hero(HeroElement.Water, 100, 50, 100, 100, 1000); // DMG = 182.4
+    defender = new Hero(HeroElement.Fire, 100, 0, 0, 0, 150); // Expected LP = -32.4
+    defenders = [defender];
+  });
+
+  // ACT
+  it("should return a dead hero (0 LP)", () => {
+    calculator.computeDamage(attacker, defenders);
+
+    // ASSERT
+    expect(defender.lp).toBe(0); // No negative defender's LP
+   });
+ });
