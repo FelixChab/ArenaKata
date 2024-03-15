@@ -8,11 +8,10 @@ export class ArenaDamageCalculator {
    * Precondition - fight is not already won (there is still one defender with lp > 0)
    */
   computeDamage(attacker: Hero, defenders: Hero[]): Hero[] {
-    const pow = attacker.pow;
-
     const adv = [];
     const eq = [];
     const dis = [];
+    // Assign enemy to categories (advantage, equal, disadvantage)
     if(attacker.element === HeroElement.Water) {
       for(const h of defenders) {
         if (h.lp <= 0) { continue; }
@@ -66,16 +65,17 @@ export class ArenaDamageCalculator {
         dmg += attacker.pow * 0.25 * (1-attacked.def/7500);
       }
     }
-
     if(attacked.buffs.includes(Buff.Defense)) {
       dmg = dmg / (1-attacked.def/7500) * (1-attacked.def/7500 - 0.25);
     }
 
+    // Damage adv/dis/eq assignement
     dmg = Math.max(dmg, 0);
     if (dmg > 0) {
       if(adv.find(h => h === attacked)) {
         dmg = dmg + dmg * 20/100
-      } else if (eq.find(h => h===attacked)) {
+      } else if (eq.find(h => h === attacked)) {
+        dmg = dmg + 0
       } else {
         dmg = dmg - dmg * 20/100
       }

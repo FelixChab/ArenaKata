@@ -3,6 +3,7 @@ import { Hero } from './model/hero';
 import { HeroElement } from './model/hero-element';
 import { Buff } from './model/buff';
 
+
 describe("Testing behavior when attacker has an attack buff and defender has a defense buff", function() {
   let calculator: ArenaDamageCalculator;
   let attacker: Hero;
@@ -61,6 +62,5 @@ describe("Testing behavior when attacker has an attack buff and defender has a d
     }
 
     expect(defender.lp).toBeLessThan(initialDefenderLP - expectedDamage);
-  });
 
 });
