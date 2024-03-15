@@ -59,7 +59,7 @@ export class ArenaDamageCalculator {
     }
 
     // BUFFS
-    if(attacker.buffs.includes(Buff.Attack)) {
+    if(attacker.buffs.includes(Buff.Attack as any)) {
       if (c) {
         dmg += (attacker.pow * 0.25 + (0.5 + attacker.leth/ 5000) * attacker.pow * 0.25) * (1-attacked.def/7500)
       } else {
@@ -67,7 +67,7 @@ export class ArenaDamageCalculator {
       }
     }
 
-    if(attacked.buffs.includes(Buff.Defense)) {
+    if(attacked.buffs.includes(Buff.Defense as any)) {
       dmg = dmg / (1-attacked.def/7500) * (1-attacked.def/7500 - 0.25);
     }
 

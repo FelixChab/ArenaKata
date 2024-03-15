@@ -1,11 +1,12 @@
 {
   "compilerOptions": {
     "module": "commonjs",
-    "target": "es5",
+    "target": "es2016",
     "strict": true,
     "noImplicitAny": true,
     "sourceMap": true,
-    "baseUrl": "./"
+    "baseUrl": "./",
+    "types": ["jest"]
   },
   "include": ["src/**/*"],
   "exclude": [
