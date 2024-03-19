@@ -47,7 +47,7 @@ describe("Arena damage calculator", function() {
   });
 });
 
-// TESTS BUFF
+// TESTS BUFFS
 describe("Testing behavior when attacker has an attack buff and defender has a defense buff", function () {
   let calculator: ArenaDamageCalculator;
   let attacker: Hero;
@@ -111,35 +111,47 @@ describe("Testing behavior when attacker has an attack buff and defender has a d
 });
 
 // TEST CRITICAL HIT 
-describe("Critical chance applies to Attacker damage output", function () {
+describe("Critical chance applies to Hero's damage properly", function () {
   // Initialize
   let calculator: ArenaDamageCalculator;
-  let attacker: Hero;
+  let attacker1: Hero;
+  let attacker2: Hero;
   let defender: Hero;
   let defenders: Hero[];
 
   // PLAN
   beforeEach(() => {
-    calculator = new ArenaDamageCalculator();
-    attacker = new Hero(HeroElement.Earth, 100, 50, 50, 100, 1000); // 100% Critical chance
-    defender = new Hero(HeroElement.Earth, 100, 70, 75, 50, 1000); // Same element, 0% defense
-    defenders = [defender];
-  })
+    calculator = new ArenaDamageCalculator()
+    attacker1 = new Hero(HeroElement.Earth, 100, 50, 50, 100, 1000) // 100% Critical chance
+    attacker2 = new Hero(HeroElement.Earth, 100, 50, 50, 0, 1000) // 0% Critical chance
+    defender = new Hero(HeroElement.Earth, 100, 70, 75, 50, 1000) // Same element, 0% defense
+    defenders = [defender]
+  });
 
   // ACT
-  it("should apply critical damage according to stats", () => {
-    const expectedAttackerDmg = 149 // à vérif
-    const initialDefenderLP = defender.lp
-    const toBeDefenderLP = initialDefenderLP - expectedAttackerDmg
-    calculator.computeDamage(attacker, defenders)
+  it("should apply critical damage", () => {
+    const expectedAttackerDmg = 151;
+    const initialDefenderLP = defender.lp;
+    const expectedDefenderLP = initialDefenderLP - expectedAttackerDmg;
+    calculator.computeDamage(attacker1, defenders);
 
     // ASSERT
-    expect(defender.lp).toBe(toBeDefenderLP)
-  })
+    expect(defender.lp).toBe(expectedDefenderLP);
+  });
+
+  it("should not apply critical damage", () => { 
+    const expectedAttackerDmg = 49;
+    const initialDefenderLP = defender.lp;
+    const expectedDefenderLP = initialDefenderLP - expectedAttackerDmg;
+    calculator.computeDamage(attacker2, defenders);
+
+    // ASSERT
+    expect(defender.lp).toBe(expectedDefenderLP);
+  });
 });
 
-// TEST LIFE POINTS >= 0
-describe("Hero life points shouldn't be negative", function () {
+// TEST LP >= 0
+describe("Life points do not go below zero", function () {
   // Initialize
   let calculator: ArenaDamageCalculator;
   let attacker: Hero;
