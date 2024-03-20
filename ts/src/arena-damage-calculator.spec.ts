@@ -6,9 +6,24 @@ import { Buff } from './model/buff';
 // TESTS ELEMENTS
 describe("Arena damage calculator", function() {
   let calculator: ArenaDamageCalculator;
+  let attacker: Hero;
+  let fireDefender: Hero;
+  let waterDefender: Hero;
+  let earthDefender: Hero;
+  let defeatedDefender: Hero;
+  let defenders: Hero[];
 
   beforeEach(() => { 
     calculator = new ArenaDamageCalculator();
+    // Initialize heroes
+    attacker = new Hero(HeroElement.Water, 100, 0, 0, 0, 1000); // Attacker with element Water
+
+    fireDefender = new Hero(HeroElement.Fire, 100, 0, 0, 0, 1000); // Fire defender (advantageous target)
+    waterDefender = new Hero(HeroElement.Water, 100, 0, 0, 0, 1000); // Water defender (neutral target)
+    earthDefender = new Hero(HeroElement.Earth, 100, 0, 0, 0, 1000); // Earth defender (disadvantageous target)
+    defeatedDefender = new Hero(HeroElement.Fire, 100, 0, 0, 0, 0); // Defeated defender (0 LP)
+    
+    defenders = [fireDefender, waterDefender, earthDefender, defeatedDefender]; // Including the defeated defender in the list
   });
 
   it('should calculate damage correctly for an attacker of each type attacking a defender of each type', () => {
@@ -46,6 +61,20 @@ describe("Arena damage calculator", function() {
     });
   });
 
+  it("should prioritize target with elemental advantage, then neutral, and lastly disadvantage, excluding defeated defenders", () => {
+    // Simulate an attack
+    const resultDefenders = calculator.computeDamage(attacker, defenders);
+
+    // Expect the fire defender to be targeted first due to elemental advantage
+    expect(fireDefender.lp).toBeLessThan(1000);
+
+    // Ensure the water and earth defenders have not been targeted in this attack
+    expect(waterDefender.lp).toBe(1000);
+    expect(earthDefender.lp).toBe(1000);
+
+    // Ensure the defeated defender's LP remains at 0 and is not targeted
+    expect(defeatedDefender.lp).toBe(0);
+  });
 
 });
 
@@ -136,7 +165,7 @@ describe("Testing behavior when attacker has an attack buff and defender has a d
 
 });
 
-// TEST CRITICAL HIT 
+// TESTS CRITICAL HIT 
 describe("Critical chance applies to Hero's damage properly", function () {
   // Initialize
   let calculator: ArenaDamageCalculator;
@@ -166,7 +195,7 @@ describe("Critical chance applies to Hero's damage properly", function () {
   });
 });
 
-// TEST LP >= 0
+// TESTS LP >= 0
 describe("Life points do not go below zero", function () {
   // Initialize
   let calculator: ArenaDamageCalculator;
@@ -191,7 +220,7 @@ describe("Life points do not go below zero", function () {
    });
  });
 
-// TEST BUFFS HOLY & TURNCOAT
+// TESTS BUFFS HOLY & TURNCOAT
 describe("Testing specific buff behaviors: HOLY and TURNCOAT", function() {
   let calculator: ArenaDamageCalculator;
   let holyAttacker: Hero;
@@ -200,6 +229,8 @@ describe("Testing specific buff behaviors: HOLY and TURNCOAT", function() {
   let waterDefender: Hero;
   let earthDefender: Hero;
   let defenders: Hero[];
+  let attacker: Hero;
+  let defender: Hero;
 
   beforeEach(() => {
     calculator = new ArenaDamageCalculator();
@@ -247,105 +278,52 @@ it('HOLY buff should nullify advantages and disadvantages, and reduce attacker\'
   expect(actualDamage).toBeCloseTo(expectedDamage, 0);
 });
 
+it("should apply both TURNCOAT and Attack buffs correctly on the attacker", () => {
+  // Initialize attacker with TURNCOAT and Attack buffs
+  attacker = new Hero(HeroElement.Water, 100, 0, 0, 0, 1000);
+  attacker.buffs.push(Buff.Turncoat);
+  attacker.buffs.push(Buff.Attack);
+
+  // Initialize a Fire defender to ensure elemental advantage after TURNCOAT effect
+  defender = new Hero(HeroElement.Fire, 100, 0, 0, 0, 1000);
+  defenders = [defender];
+
+  const initialDefenderLP = defender.lp;
+
+  // Execute damage calculation
+  calculator.computeDamage(attacker, defenders);
+
+  // Expecting +20% damage due to elemental advantage (TURNCOAT) and then +25% due to Attack buff
+  const expectedDamage = Math.floor((100 * 1.2) * 1.25);
+  const expectedDefenderLP = Math.max(initialDefenderLP - expectedDamage, 0);
+
+  expect(defender.lp).toBe(expectedDefenderLP);
 });
 
+it("should confirm that HOLY buff nullifies the effect of Defense buff on the defender", () => {
+  // Initialize the attacker with HOLY buff
+  attacker = new Hero(HeroElement.Earth, 100, 0, 0, 0, 1000);
+  attacker.buffs.push(Buff.Holy);
 
+  // Initialize the defender with Defense buff
+  defender = new Hero(HeroElement.Water, 100, 50, 50, 70, 1000);
+  defender.buffs.push(Buff.Defense);
+  defenders = [defender];
 
-describe("Testing complex buff interactions", function() {
-  let calculator: ArenaDamageCalculator;
-  let attacker: Hero;
-  let defender: Hero;
-  let defenders: Hero[];
+  const initialDefenderLP = defender.lp;
 
-  beforeEach(() => {
-    calculator = new ArenaDamageCalculator();
-  });
+  // Execute damage calculation
+  calculator.computeDamage(attacker, defenders);
 
-  it("should apply both TURNCOAT and Attack buffs correctly on the attacker", () => {
-    // Initialize attacker with TURNCOAT and Attack buffs
-    attacker = new Hero(HeroElement.Water, 100, 0, 0, 0, 1000);
-    attacker.buffs.push(Buff.Turncoat);
-    attacker.buffs.push(Buff.Attack);
+  // HOLY buff ignores Defense buff, dealing 80% of attacker's power in damage
+  const expectedDamage = Math.floor(100 * 0.8);
+  const expectedDefenderLP = Math.max(initialDefenderLP - expectedDamage, 0);
 
-    // Initialize a Fire defender to ensure elemental advantage after TURNCOAT effect
-    defender = new Hero(HeroElement.Fire, 100, 0, 0, 0, 1000);
-    defenders = [defender];
-
-    const initialDefenderLP = defender.lp;
-
-    // Execute damage calculation
-    calculator.computeDamage(attacker, defenders);
-
-    // Expecting +20% damage due to elemental advantage (TURNCOAT) and then +25% due to Attack buff
-    const expectedDamage = Math.floor((100 * 1.2) * 1.25);
-    const expectedDefenderLP = Math.max(initialDefenderLP - expectedDamage, 0);
-
-    expect(defender.lp).toBe(expectedDefenderLP);
-  });
-
-  it("should confirm that HOLY buff nullifies the effect of Defense buff on the defender", () => {
-    // Initialize the attacker with HOLY buff
-    attacker = new Hero(HeroElement.Earth, 100, 0, 0, 0, 1000);
-    attacker.buffs.push(Buff.Holy);
-
-    // Initialize the defender with Defense buff
-    defender = new Hero(HeroElement.Water, 100, 50, 50, 70, 1000);
-    defender.buffs.push(Buff.Defense);
-    defenders = [defender];
-
-    const initialDefenderLP = defender.lp;
-
-    // Execute damage calculation
-    calculator.computeDamage(attacker, defenders);
-
-    // HOLY buff ignores Defense buff, dealing 80% of attacker's power in damage
-    const expectedDamage = Math.floor(100 * 0.8);
-    const expectedDefenderLP = Math.max(initialDefenderLP - expectedDamage, 0);
-
-    expect(defender.lp).toBe(expectedDefenderLP);
-  });
+  expect(defender.lp).toBe(expectedDefenderLP);
+});
 });
 
-describe("Target selection based on elemental affinities", function() {
-  let calculator: ArenaDamageCalculator;
-  let attacker: Hero;
-  let fireDefender: Hero;
-  let waterDefender: Hero;
-  let earthDefender: Hero;
-  let defeatedDefender: Hero;
-  let defenders: Hero[];
-
-  beforeEach(() => {
-    calculator = new ArenaDamageCalculator();
-
-    // Initialize heroes
-    attacker = new Hero(HeroElement.Water, 100, 0, 0, 0, 1000); // Attacker with element Water
-
-    fireDefender = new Hero(HeroElement.Fire, 100, 0, 0, 0, 1000); // Fire defender (advantageous target)
-    waterDefender = new Hero(HeroElement.Water, 100, 0, 0, 0, 1000); // Water defender (neutral target)
-    earthDefender = new Hero(HeroElement.Earth, 100, 0, 0, 0, 1000); // Earth defender (disadvantageous target)
-    defeatedDefender = new Hero(HeroElement.Fire, 100, 0, 0, 0, 0); // Defeated defender (0 LP)
-    
-    defenders = [fireDefender, waterDefender, earthDefender, defeatedDefender]; // Including the defeated defender in the list
-  });
-
-  it("should prioritize target with elemental advantage, then neutral, and lastly disadvantage, excluding defeated defenders", () => {
-    // Simulate an attack
-    const resultDefenders = calculator.computeDamage(attacker, defenders);
-
-    // Expect the fire defender to be targeted first due to elemental advantage
-    expect(fireDefender.lp).toBeLessThan(1000);
-
-    // Ensure the water and earth defenders have not been targeted in this attack
-    expect(waterDefender.lp).toBe(1000);
-    expect(earthDefender.lp).toBe(1000);
-
-    // Ensure the defeated defender's LP remains at 0 and is not targeted
-    expect(defeatedDefender.lp).toBe(0);
-  });
-});
-
-// TESTS ATTRIBUTS DES HÉROS
+// TESTS ATTRIBUTS HEROS
 describe("Testing hero attributes", function() {
   let hero: Hero;
   let calculator: ArenaDamageCalculator;
