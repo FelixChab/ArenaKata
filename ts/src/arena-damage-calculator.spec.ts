@@ -195,31 +195,6 @@ describe("Critical chance applies to Hero's damage properly", function () {
   });
 });
 
-// TESTS LP >= 0
-describe("Life points do not go below zero", function () {
-  // Initialize
-  let calculator: ArenaDamageCalculator;
-  let attacker: Hero;
-  let defender: Hero;
-  let defenders: Hero[];
-
-  // PLAN
-  beforeEach(() => { 
-    calculator = new ArenaDamageCalculator();
-    attacker = new Hero(HeroElement.Water, 100, 50, 100, 100, 1000); // DMG = 182.4
-    defender = new Hero(HeroElement.Fire, 100, 0, 0, 0, 150); // Expected LP = -32.4
-    defenders = [defender];
-  });
-
-  // ACT
-  it("should return a dead hero (0 LP)", () => {
-    calculator.computeDamage(attacker, defenders);
-
-    // ASSERT
-    expect(defender.lp).toBe(0); // No negative defender's LP
-   });
- });
-
 // TESTS BUFFS HOLY & TURNCOAT
 describe("Testing specific buff behaviors: HOLY and TURNCOAT", function() {
   let calculator: ArenaDamageCalculator;
@@ -327,11 +302,24 @@ it("should confirm that HOLY buff nullifies the effect of Defense buff on the de
 describe("Testing hero attributes", function() {
   let hero: Hero;
   let calculator: ArenaDamageCalculator;
+  let attacker: Hero;
+  let defender: Hero;
+  let defenders: Hero[];
 
   beforeEach(() => {
     hero = new Hero(HeroElement.Water, 100, 50, 50, 70, 1000);
     calculator = new ArenaDamageCalculator();
+    attacker = new Hero(HeroElement.Water, 100, 50, 100, 100, 1000); // DMG = 182.4
+    defender = new Hero(HeroElement.Fire, 100, 0, 0, 0, 150); // Expected LP = -32.4
+    defenders = [defender];
   });
+    // ACT
+    it("should return a dead hero (0 LP)", () => {
+      calculator.computeDamage(attacker, defenders);
+  
+      // ASSERT
+      expect(defender.lp).toBe(0); // No negative defender's LP
+     });
   it("should correctly update hero's attributes", () => {
     // Update hero's attributes
     hero.pow = 150;
@@ -357,7 +345,7 @@ describe("Testing hero attributes", function() {
     expect(hero).toBeDefined();
 });
 
-it("should handle zero or negative hero hit points", () => {
+  it("should handle zero or negative hero hit points", () => {
     // Test when hero hit points become zero or negative
     const attacker = new Hero(HeroElement.Water, 100, 50, 50, 70, 100);
     const defender = new Hero(HeroElement.Fire, 100, 50, 50, 70, 0);
