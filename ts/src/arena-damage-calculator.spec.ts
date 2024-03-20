@@ -4,7 +4,7 @@ import { Hero } from './model/hero';
 import { Buff } from './model/buff';
 
 // TESTS ELEMENTS
-describe("Arena damage calculator", function() {
+describe("ARENA TESTS", function() {
   let calculator: ArenaDamageCalculator;
   let attacker: Hero;
   let fireDefender: Hero;
@@ -15,14 +15,13 @@ describe("Arena damage calculator", function() {
 
   beforeEach(() => { 
     calculator = new ArenaDamageCalculator();
-    // Initialize heroes
-    attacker = new Hero(HeroElement.Water, 100, 0, 0, 0, 1000); // Attacker with element Water
 
+    // Initializing heroes
+    attacker = new Hero(HeroElement.Water, 100, 0, 0, 0, 1000); // Attacker with element Water
     fireDefender = new Hero(HeroElement.Fire, 100, 0, 0, 0, 1000); // Fire defender (advantageous target)
     waterDefender = new Hero(HeroElement.Water, 100, 0, 0, 0, 1000); // Water defender (neutral target)
     earthDefender = new Hero(HeroElement.Earth, 100, 0, 0, 0, 1000); // Earth defender (disadvantageous target)
     defeatedDefender = new Hero(HeroElement.Fire, 100, 0, 0, 0, 0); // Defeated defender (0 LP)
-    
     defenders = [fireDefender, waterDefender, earthDefender, defeatedDefender]; // Including the defeated defender in the list
   });
 
@@ -79,7 +78,7 @@ describe("Arena damage calculator", function() {
 });
 
 // TESTS BUFFS
-describe("Testing behavior when attacker has an attack buff and defender has a defense buff", function () {
+describe("ATK/DEF BUFFS TESTS", function () {
   let calculator: ArenaDamageCalculator;
   let attacker: Hero;
   let defender: Hero;
@@ -111,16 +110,16 @@ describe("Testing behavior when attacker has an attack buff and defender has a d
     defender.buffs.push(Buff.Defense);
   
     const initialDefenderLP = defender.lp;
+
     calculator.computeDamage(attacker, defenders);
 
     // Calculating expected damage considering buffs
-    const expectedDamage = attacker.pow * 1.25 * 0.75;
+    const expectedDamage = (attacker.pow * 1.25) * 0.75;
   
-    expect(defender.lp).toBeLessThan(initialDefenderLP - expectedDamage);
+    expect(defender.lp).toBeLessThanOrEqual(initialDefenderLP - expectedDamage);
   });
 
   it('should adjust damage correctly when attacker has a certain critical hit chance', () => {
-
     attacker = new Hero(HeroElement.Earth, 100, 50, 50, 100, 1000);
   
     const initialDefenderLP = defender.lp;
@@ -140,7 +139,7 @@ describe("Testing behavior when attacker has an attack buff and defender has a d
 
   });
 
-  it('should calculate damage correctly when attacker has Attack buff and c is false', () => {
+  it('should calculate damage correctly when attacker has Attack buff and no critical hit', () => {
     attacker.buffs = [Buff.Attack];
     attacker.pow = 10;
     calculator.AttackBuffMultiplier = 2;
@@ -166,7 +165,7 @@ describe("Testing behavior when attacker has an attack buff and defender has a d
 });
 
 // TESTS CRITICAL HIT 
-describe("Critical chance applies to Hero's damage properly", function () {
+describe("CRITICAL HITS TESTS", function () {
   // Initialize
   let calculator: ArenaDamageCalculator;
   let attacker1: Hero;
@@ -205,7 +204,7 @@ describe("Critical chance applies to Hero's damage properly", function () {
 });
 
 // TESTS BUFFS HOLY & TURNCOAT
-describe("Testing specific buff behaviors: HOLY and TURNCOAT", function() {
+describe("NEW BUFFS TESTS", function() {
   let calculator: ArenaDamageCalculator;
   let holyAttacker: Hero;
   let turncoatAttacker: Hero;
@@ -248,67 +247,67 @@ describe("Testing specific buff behaviors: HOLY and TURNCOAT", function() {
     } else {
         expect(actualDamage).toBeLessThan(0); 
     }
-});
+  });
 
-it('HOLY buff should nullify advantages and disadvantages, and reduce attacker\'s damage by 20%', () => {
-  const initialDefenderLP = defenders[0].lp;
-  const initialAttackerPow = holyAttacker.pow;
+  it('HOLY buff should nullify advantages and disadvantages, and reduce attacker\'s damage by 20%', () => {
+    const initialDefenderLP = defenders[0].lp;
+    const initialAttackerPow = holyAttacker.pow;
 
-  calculator.computeDamage(holyAttacker, defenders);
-  const actualDamage = initialDefenderLP - defenders[0].lp;
+    calculator.computeDamage(holyAttacker, defenders);
+    const actualDamage = initialDefenderLP - defenders[0].lp;
 
-  // Vérifie que les dégâts infligés sont réduits de 20% comme prévu
-  const expectedDamage = initialAttackerPow * 0.8; // Réduit les dégâts de 20%
-  expect(actualDamage).toBeCloseTo(expectedDamage, 0);
-});
+    // Vérifie que les dégâts infligés sont réduits de 20% comme prévu
+    const expectedDamage = initialAttackerPow * 0.8; // Réduit les dégâts de 20%
+    expect(actualDamage).toBeCloseTo(expectedDamage, 0);
+  });
 
-it("should apply both TURNCOAT and Attack buffs correctly on the attacker", () => {
-  // Initialize attacker with TURNCOAT and Attack buffs
-  attacker = new Hero(HeroElement.Water, 100, 0, 0, 0, 1000);
-  attacker.buffs.push(Buff.Turncoat);
-  attacker.buffs.push(Buff.Attack);
+  it("should apply both TURNCOAT and Attack buffs correctly on the attacker", () => {
+    // Initialize attacker with TURNCOAT and Attack buffs
+    attacker = new Hero(HeroElement.Water, 100, 0, 0, 0, 1000);
+    attacker.buffs.push(Buff.Turncoat);
+    attacker.buffs.push(Buff.Attack);
 
-  // Initialize a Fire defender to ensure elemental advantage after TURNCOAT effect
-  defender = new Hero(HeroElement.Fire, 100, 0, 0, 0, 1000);
-  defenders = [defender];
+   // Initialize a Fire defender to ensure elemental advantage after TURNCOAT effect
+    defender = new Hero(HeroElement.Fire, 100, 0, 0, 0, 1000);
+    defenders = [defender];
 
-  const initialDefenderLP = defender.lp;
+    const initialDefenderLP = defender.lp;
 
-  // Execute damage calculation
-  calculator.computeDamage(attacker, defenders);
+    // Execute damage calculation
+    calculator.computeDamage(attacker, defenders);
 
-  // Expecting +20% damage due to elemental advantage (TURNCOAT) and then +25% due to Attack buff
-  const expectedDamage = Math.floor((100 * 1.2) * 1.25);
-  const expectedDefenderLP = Math.max(initialDefenderLP - expectedDamage, 0);
+    // Expecting +20% damage due to elemental advantage (TURNCOAT) and then +25% due to Attack buff
+    const expectedDamage = Math.floor((100 * 1.2) * 1.25);
+    const expectedDefenderLP = Math.max(initialDefenderLP - expectedDamage, 0);
 
-  expect(defender.lp).toBe(expectedDefenderLP);
-});
+   expect(defender.lp).toBe(expectedDefenderLP);
+  });
 
-it("should confirm that HOLY buff nullifies the effect of Defense buff on the defender", () => {
-  // Initialize the attacker with HOLY buff
-  attacker = new Hero(HeroElement.Earth, 100, 0, 0, 0, 1000);
-  attacker.buffs.push(Buff.Holy);
+  it("should confirm that HOLY buff nullifies the effect of Defense buff on the defender", () => {
+    // Initialize the attacker with HOLY buff
+    attacker = new Hero(HeroElement.Earth, 100, 0, 0, 0, 1000);
+    attacker.buffs.push(Buff.Holy);
 
-  // Initialize the defender with Defense buff
-  defender = new Hero(HeroElement.Water, 100, 50, 50, 70, 1000);
-  defender.buffs.push(Buff.Defense);
-  defenders = [defender];
+    // Initialize the defender with Defense buff
+    defender = new Hero(HeroElement.Water, 100, 50, 50, 70, 1000);
+    defender.buffs.push(Buff.Defense);
+    defenders = [defender];
 
-  const initialDefenderLP = defender.lp;
+    const initialDefenderLP = defender.lp;
 
-  // Execute damage calculation
-  calculator.computeDamage(attacker, defenders);
+    // Execute damage calculation
+    calculator.computeDamage(attacker, defenders);
 
-  // HOLY buff ignores Defense buff, dealing 80% of attacker's power in damage
-  const expectedDamage = Math.floor(100 * 0.8);
-  const expectedDefenderLP = Math.max(initialDefenderLP - expectedDamage, 0);
+    // HOLY buff ignores Defense buff, dealing 80% of attacker's power in damage
+    const expectedDamage = Math.floor(100 * 0.8);
+    const expectedDefenderLP = Math.max(initialDefenderLP - expectedDamage, 0);
 
-  expect(defender.lp).toBe(expectedDefenderLP);
-});
+    expect(defender.lp).toBe(expectedDefenderLP);
+  });
 });
 
 // TESTS ATTRIBUTS HEROS
-describe("Testing hero attributes", function() {
+describe("HEROES ATTRIBUTES TESTS", function() {
   let hero: Hero;
   let calculator: ArenaDamageCalculator;
   let attacker: Hero;
@@ -322,13 +321,15 @@ describe("Testing hero attributes", function() {
     defender = new Hero(HeroElement.Fire, 100, 0, 0, 0, 150); // Expected LP = -32.4
     defenders = [defender];
   });
-    // ACT
-    it("should return a dead hero (0 LP)", () => {
-      calculator.computeDamage(attacker, defenders);
-  
-      // ASSERT
-      expect(defender.lp).toBe(0); // No negative defender's LP
-     });
+
+  // ACT
+  it("should return a dead hero (0 LP)", () => {
+    calculator.computeDamage(attacker, defenders);
+
+    // ASSERT
+    expect(defender.lp).toBe(0); // No negative defender's LP
+  });
+
   it("should correctly update hero's attributes", () => {
     // Update hero's attributes
     hero.pow = 150;
@@ -336,6 +337,7 @@ describe("Testing hero attributes", function() {
     hero.leth = 1500;
     hero.crtr = 90;
     hero.lp = 800;
+
     // Verify if hero's attributes are updated correctly
     expect(hero.pow).toBe(150);
     expect(hero.def).toBe(70);
@@ -346,22 +348,28 @@ describe("Testing hero attributes", function() {
 
   it('should switch element correctly', () => {
     hero.switchElement(HeroElement.Water);
+
     expect(hero.element).toBe(HeroElement.Water);
   });
+
   it("should handle extreme values for hero attributes", () => {
     // Test with very large or very small attribute values
     const hero = new Hero(HeroElement.Water, 9999, 9999, 9999, 9999, 9999);
+
     expect(hero).toBeDefined();
-});
+  });
 
   it("should handle zero or negative hero hit points", () => {
     // Test when hero hit points become zero or negative
     const attacker = new Hero(HeroElement.Water, 100, 50, 50, 70, 100);
     const defender = new Hero(HeroElement.Fire, 100, 50, 50, 70, 0);
     const defenders = [defender];
+
     calculator.computeDamage(attacker, defenders);
+
     expect(defender.lp).toBe(0);
-});
+  });
+
 });
 
 

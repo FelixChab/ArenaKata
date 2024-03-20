@@ -3,6 +3,7 @@ import { Buff } from "./model/buff";
 import { Hero } from "./model/hero";
 
 export class ArenaDamageCalculator {
+
   public CriticalRateDivisor = 5000;
   public DefenseRateDivisor = 7500;
   public AttackBuffMultiplier = 0.25;
@@ -20,7 +21,8 @@ export class ArenaDamageCalculator {
     const dis = [];
 
     // Assign enemy to corresponding category (advantage, equal, disadvantage)
-    for(const h of defenders) {
+    for (const h of defenders) {
+      // cf. Preconditioh
       if (h.lp <= 0) { continue; }
       switch(attacker.element) {
         case HeroElement.Water:
@@ -49,20 +51,19 @@ export class ArenaDamageCalculator {
     // BUFFS
     if(attacker.buffs.includes(Buff.Attack)) {
       if (c) {
-        dmg += (attacker.pow * this.AttackBuffMultiplier + (0.5 + attacker.leth/ this.CriticalRateDivisor) * attacker.pow * this.AttackBuffMultiplier) * (1-attacked.def/this.DefenseRateDivisor)
+        dmg += (attacker.pow * this.AttackBuffMultiplier + (0.5 + attacker.leth / this.CriticalRateDivisor) * attacker.pow * this.AttackBuffMultiplier) * (1-attacked.def/this.DefenseRateDivisor)
       } else {
-        dmg += attacker.pow * this.AttackBuffMultiplier * (1-attacked.def/this.DefenseRateDivisor);
+        dmg += attacker.pow * this.AttackBuffMultiplier * (1 - attacked.def / this.DefenseRateDivisor);
       }
     }
 
     // HOLY 
     if (attacker.buffs.includes(Buff.Holy)) {
-      const attacked = defenders.find((defender) => defender.lp > 0)
-      if (!attacked) return defenders // No defender
-      dmg = attacker.pow * this.HolyBuffMultiplier
-      attacked.lp -= Math.floor(dmg)
-      if (attacked.lp < 0) attacked.lp = 0
-      return defenders
+      if (c) {
+        dmg += attacker.pow * this.HolyBuffMultiplier + (0.5 + attacker.leth / this.CriticalRateDivisor);
+      } else {
+        dmg = attacker.pow * this.HolyBuffMultiplier; // Holy ignores defense
+      }
     }
 
     // TURNCOAT
@@ -95,7 +96,7 @@ export class ArenaDamageCalculator {
       } else {
         dmg = dmg - dmg * this.DisadvantageDamageMultiplier
       }
-
+      // Attacking defender
       dmg = Math.floor(dmg);
       if (dmg > 0) {
         attacked.lp = attacked.lp - dmg
@@ -104,7 +105,6 @@ export class ArenaDamageCalculator {
         }
       }
     }
-
     return defenders;
   }
 }
