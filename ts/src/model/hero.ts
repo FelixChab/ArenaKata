@@ -7,10 +7,10 @@ export class Hero {
   constructor(
     // Temporaire : retirer readonly pour buff Turncoat
     public element: HeroElement,
-    readonly pow: number,
-    readonly def: number,
-    readonly leth: number,
-    readonly crtr: number,
+    public pow: number,
+    public def: number,
+    public leth: number,
+    public crtr: number,
     public lp: number) { }
   
   public switchElement(newElement: HeroElement) {

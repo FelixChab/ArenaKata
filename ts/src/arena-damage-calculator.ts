@@ -14,52 +14,21 @@ export class ArenaDamageCalculator {
     const dis = [];
 
     // Assign enemy to corresponding category (advantage, equal, disadvantage)
-    // TODO : remplacer par un switch (voir Turncoat) --> voir en fonction du readonly
-    switch (attacker.element) {
-      case HeroElement.Water:
-        // ...
-        break
-      case HeroElement.Fire:
-        // ...
-        break
-      case HeroElement.Earth:
-        // ...
-        break
-    }
-    if(attacker.element === HeroElement.Water) {
-      for(const h of defenders) {
-        if (h.lp <= 0) { continue; }
-        if (h.element === HeroElement.Fire) {
-          adv.push(h);
-        } else if (h.element === HeroElement.Water) {
-          eq.push(h);
-        } else {
-          dis.push(h);
-        }
-      }
-    } else if(attacker.element === HeroElement.Fire) {
-      for(const h of defenders) {
-        if (h.lp <= 0) { continue; }
-        if (h.element === HeroElement.Fire) {
-          eq.push(h);
-        } else if (h.element === HeroElement.Water) {
-          dis.push(h);
-        } else {
-          adv.push(h);
-        }
-      } 
-    } else {
-      for(const h of defenders) {
-        if (h.lp <= 0) { continue; }
-        if (h.element === HeroElement.Fire) {
-          dis.push(h);
-        } else if (h.element === HeroElement.Water) {
-          adv.push(h);
-        } else {
-          eq.push(h);
-        }
+    for(const h of defenders) {
+      if (h.lp <= 0) { continue; }
+      switch(attacker.element) {
+        case HeroElement.Water:
+          h.element === HeroElement.Fire ? adv.push(h) : h.element === HeroElement.Water ? eq.push(h) : dis.push(h);
+          break;
+        case HeroElement.Fire:
+          h.element === HeroElement.Fire ? eq.push(h) : h.element === HeroElement.Water ? dis.push(h) : adv.push(h);
+          break;
+        case HeroElement.Earth:
+          h.element === HeroElement.Fire ? dis.push(h) : h.element === HeroElement.Water ? adv.push(h) : eq.push(h);
+          break;
       }
     }
+   
 
     const attacked = adv.length && adv[Math.floor(Math.random() * adv.length)] || eq.length && eq[Math.floor(Math.random() * eq.length)] || dis[Math.floor(Math.random() * dis.length)];
     
@@ -71,7 +40,7 @@ export class ArenaDamageCalculator {
     } else {
       dmg = attacker.pow * (1-attacked.def/7500);
     }
-
+    
     // BUFFS
     if(attacker.buffs.includes(Buff.Attack)) {
       if (c) {
