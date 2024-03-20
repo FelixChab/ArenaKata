@@ -3,13 +3,13 @@ import { Buff } from "./model/buff";
 import { Hero } from "./model/hero";
 
 export class ArenaDamageCalculator {
-  private readonly CriticalRateDivisor = 5000;
-  private readonly DefenseRateDivisor = 7500;
-  private readonly AttackBuffMultiplier = 0.25;
-  private readonly HolyBuffMultiplier = 0.8;
-  private readonly DefenseBuffMultiplier = 0.25;
-  private readonly AdvantageDamageMultiplier = 0.2;
-  private readonly DisadvantageDamageMultiplier = 0.2;
+  public CriticalRateDivisor = 5000;
+  public DefenseRateDivisor = 7500;
+  public AttackBuffMultiplier = 0.25;
+  public HolyBuffMultiplier = 0.8;
+  public DefenseBuffMultiplier = 0.25;
+  public AdvantageDamageMultiplier = 0.2;
+  public DisadvantageDamageMultiplier = 0.2;
 
   /**
    * Precondition - fight is not already won (there is still one defender with lp > 0)

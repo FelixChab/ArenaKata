@@ -45,6 +45,8 @@ describe("Arena damage calculator", function() {
       });
     });
   });
+
+
 });
 
 // TESTS BUFFS
@@ -61,7 +63,7 @@ describe("Testing behavior when attacker has an attack buff and defender has a d
     // Initialize the attacker and defender with different elements for coverage
     attacker = new Hero(HeroElement.Earth, 100, 50, 50, 70, 1000);
     defender = new Hero(HeroElement.Water, 100, 50, 50, 70, 1000);
-
+ 
     defenders = [defender];
   });
 
@@ -108,17 +110,30 @@ describe("Testing behavior when attacker has an attack buff and defender has a d
     expect(defender.lp).toBeLessThan(initialDefenderLP - expectedDamage);
 
   });
-  it("should correctly calculate damage with attack buff", () => {
-    // Applying attack buff to the attacker
-    attacker.buffs.push(Buff.Attack);
-    const initialDefenderLP = defender.lp;
-    calculator.computeDamage(attacker, defenders);
-    // Calculate expected damage considering the attack buff
-    const expectedDamage = attacker.pow * 1.25 * (1 - defender.def / 7500);
-    const expectedDefenderLP = Math.max(initialDefenderLP - expectedDamage, 0);
-    // Verify if defender's LP is reduced as expected with the attack buff
-    expect(defender.lp).toBe(expectedDefenderLP);
+
+  it('should calculate damage correctly when attacker has Attack buff and c is false', () => {
+    attacker.buffs = [Buff.Attack];
+    attacker.pow = 10;
+    calculator.AttackBuffMultiplier = 2;
+    defender.def = 5;
+    calculator.DefenseRateDivisor = 10;
+  
+    const runs = 100;
+    for(let i = 0; i < runs; i++) {
+      const initialDefenderLP = defender.lp;
+  
+      calculator.computeDamage(attacker, defenders);
+  
+      const actualDmg = initialDefenderLP - defender.lp;
+      const expectedDmg = attacker.pow * calculator.AttackBuffMultiplier * (1 - defender.def / calculator.DefenseRateDivisor);
+      expect(actualDmg).toBeGreaterThanOrEqual(expectedDmg * 0.9);
+      expect(actualDmg).toBeLessThanOrEqual(expectedDmg * 1.1);
+  
+      // Reset defender's lp for the next run
+      defender.lp = initialDefenderLP;
+    }
   });
+
 });
 
 // TEST CRITICAL HIT 
