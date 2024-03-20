@@ -183,6 +183,15 @@ describe("Critical chance applies to Hero's damage properly", function () {
     defenders = [defender]
   });
 
+  it("should apply critical damage", () => { 
+    const expectedAttackerDmg = Math.floor((attacker1.pow + (0.5 + attacker1.leth/5000) * attacker1.pow) * (1-defender.def/7500));
+    const initialDefenderLP = defender.lp;
+    const expectedDefenderLP = initialDefenderLP - expectedAttackerDmg;
+    calculator.computeDamage(attacker1, defenders);
+    
+    // ASSERT
+    expect(defender.lp).toBe(expectedDefenderLP);
+  });
 
   it("should not apply critical damage", () => { 
     const expectedAttackerDmg = Math.floor(attacker2.pow * (1-defender.def/7500));
