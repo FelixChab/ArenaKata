@@ -1,0 +1,15 @@
+{
+  "name": "arenakata",
+  "version": "1.0.0",
+  "description": "Prenez le contrôle de l'arène en infligeant des dégâts massifs à vos adversaires.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/jest": "^29.5.12"
+  }
+}
