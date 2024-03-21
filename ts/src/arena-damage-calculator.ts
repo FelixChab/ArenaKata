@@ -48,7 +48,7 @@ export class ArenaDamageCalculator {
       dmg = attacker.pow * (1-attacked.def/this.DefenseRateDivisor);
     }
     
-    // BUFFS
+    // ATTACK BUFF
     if(attacker.buffs.includes(Buff.Attack)) {
       if (c) {
         dmg += (attacker.pow * this.AttackBuffMultiplier + (0.5 + attacker.leth / this.CriticalRateDivisor) * attacker.pow * this.AttackBuffMultiplier) * (1-attacked.def/this.DefenseRateDivisor)
@@ -57,16 +57,16 @@ export class ArenaDamageCalculator {
       }
     }
 
-    // HOLY 
+    // HOLY BUFF
     if (attacker.buffs.includes(Buff.Holy)) {
       if (c) {
-        dmg += attacker.pow * this.HolyBuffMultiplier + (0.5 + attacker.leth / this.CriticalRateDivisor);
+        dmg = (attacker.pow + ((0.5 + attacker.leth / this.CriticalRateDivisor) * attacker.pow)) * this.HolyBuffMultiplier;
       } else {
         dmg = attacker.pow * this.HolyBuffMultiplier; // Holy ignores defense
       }
     }
 
-    // TURNCOAT
+    // TURNCOAT BUFF
     if (attacker.buffs.includes(Buff.Turncoat)) {
       switch (attacker.element) {
         case HeroElement.Water:
@@ -81,12 +81,13 @@ export class ArenaDamageCalculator {
       }
     }
 
-    // DEFENSE
+    // DEFENSE BUFF
     if(attacked.buffs.includes(Buff.Defense)) {
       dmg = dmg / (1-attacked.def/this.DefenseRateDivisor) * (1-attacked.def/this.DefenseRateDivisor - this.DefenseBuffMultiplier);
     }
 
     // Damage adv/dis/eq assignement
+    // TODO : condition pour ne pas multiplié les dégâts par les Multipliers avantages / désavatages SI l'attaquant à le buff Holy
     dmg = Math.max(dmg, 0);
     if (dmg > 0) {
       if(adv.find(h => h === attacked)) {

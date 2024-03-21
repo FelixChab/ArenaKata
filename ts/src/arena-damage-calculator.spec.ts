@@ -216,7 +216,7 @@ describe("NEW BUFFS TESTS", function() {
     calculator = new ArenaDamageCalculator();
 
     // Initialisation des héros
-    holyAttacker = new Hero(HeroElement.Water, 100, 50, 50, 70, 1000);
+    holyAttacker = new Hero(HeroElement.Water, 100, 50, 50, 0, 1000);
     holyAttacker.buffs.push(Buff.Holy); // HOLY buff
 
     turncoatAttacker = new Hero(HeroElement.Fire, 100, 50, 50, 70, 1000);
@@ -247,6 +247,7 @@ describe("NEW BUFFS TESTS", function() {
         expect(actualDamage).toBeLessThan(0); 
     }
   });
+
   it("should apply both TURNCOAT and Attack buffs correctly on the attacker", () => {
     // Initialize attacker with TURNCOAT and Attack buffs
     attacker = new Hero(HeroElement.Water, 100, 0, 0, 0, 1000);
@@ -268,6 +269,7 @@ describe("NEW BUFFS TESTS", function() {
 
    expect(defender.lp).toBe(expectedDefenderLP);
   });
+
   it('should increase damage with AdvantageDamageMultiplier when attacker has elemental advantage', () => {
     // Initialize the attacker with enough power to deal damage
     attacker = new Hero(HeroElement.Water, 100, 0, 0, 0, 1000);
@@ -284,6 +286,7 @@ describe("NEW BUFFS TESTS", function() {
     // The defender's lp should be reduced by the damage amount
     expect(defender.lp).toBeLessThan(initialDefenderLP);
   });
+
   it('should decrease damage with DisadvantageDamageMultiplier when attacker has elemental disadvantage', () => {
     // Initialize the attacker with enough power to deal damage
     attacker = new Hero(HeroElement.Fire, 100, 0, 0, 0, 1000);
@@ -300,6 +303,7 @@ describe("NEW BUFFS TESTS", function() {
     // The defender's lp should be reduced by the damage amount
     expect(defender.lp).toBeLessThan(initialDefenderLP);
   });
+
   it('should correctly apply Holy buff', () => {
     attacker.buffs = [Buff.Holy];
     attacker.pow = 10;
@@ -311,6 +315,7 @@ describe("NEW BUFFS TESTS", function() {
     const result = calculator.computeDamage(attacker, defenders);
     expect(result).toBeDefined();
   });
+
   // Test for Defense Buff
   it('should correctly apply Defense buff', () => {
     defenders[0].buffs = [Buff.Defense];
@@ -323,38 +328,32 @@ describe("NEW BUFFS TESTS", function() {
     const result = calculator.computeDamage(attacker, defenders);
     expect(result).toBeDefined();
   });
-  
-
 
   it('HOLY buff should nullify advantages and disadvantages, and reduce attacker\'s damage by 20%', () => {
-    const initialDefenderLP = defenders[0].lp;
-    const initialAttackerPow = holyAttacker.pow;
+    defender.element = HeroElement.Water;
+    const initialDefenderLP = defender.lp;
+    const expectedDamage = holyAttacker.pow * 0.8; // Damage reduced by 20%
 
     calculator.computeDamage(holyAttacker, defenders);
-    const actualDamage = initialDefenderLP - defenders[0].lp;
 
-    // Vérifie que les dégâts infligés sont réduits de 20% comme prévu
-    const expectedDamage = initialAttackerPow * 0.8; // Réduit les dégâts de 20%
-    expect(actualDamage).toBeCloseTo(expectedDamage, 0);
+    const actualDamage = initialDefenderLP - defender.lp;
+
+    expect(actualDamage).toBe(expectedDamage);
   });
-  it("should confirm that HOLY buff nullifies the effect of Defense buff on the defender", () => {
-    // Initialize the attacker with HOLY buff
-    attacker = new Hero(HeroElement.Earth, 100, 0, 0, 0, 1000);
-    attacker.buffs.push(Buff.Holy);
 
+  it("should confirm that HOLY buff nullifies the effect of Defense buff on the defender", () => {
     // Initialize the defender with Defense buff
-    defender = new Hero(HeroElement.Water, 100, 50, 50, 70, 1000);
+    defender = new Hero(HeroElement.Water, 100, 0, 50, 70, 1000);
     defender.buffs.push(Buff.Defense);
     defenders = [defender];
 
-    const initialDefenderLP = defender.lp;
-
+    // HOLY buff ignores Defense buff, dealing 80% of attacker's power in damage
+    const initialDefenderLP = 1000;
+    const expectedDamage = holyAttacker.pow * 0.8; // Damage reduced by 20%
+    const expectedDefenderLP = initialDefenderLP - expectedDamage;
+    
     // Execute damage calculation
     calculator.computeDamage(attacker, defenders);
-
-    // HOLY buff ignores Defense buff, dealing 80% of attacker's power in damage
-    const expectedDamage = Math.floor(100 * 0.8);
-    const expectedDefenderLP = Math.max(initialDefenderLP - expectedDamage, 0);
 
     expect(defender.lp).toBe(expectedDefenderLP);
   });
