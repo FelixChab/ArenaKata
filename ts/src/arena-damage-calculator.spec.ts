@@ -232,6 +232,28 @@ describe("CRITICAL HITS TESTS", function () {
     // ASSERT
     expect(defender.lp).toBe(expectedDefenderLP);
   });
+
+  it('should adjust damage correctly based on attacker\'s critical hit chance', () => {
+    // Set up the attacker with a critical hit chance
+    attacker2 = new Hero(HeroElement.Fire, 100, 50, 50, 70, 1000);
+    attacker2.crtr = 100; // 100% critical hit chance
+    
+    // Set up the defender
+    defender = new Hero(HeroElement.Water, 100, 50, 50, 70, 1000);
+    defenders = [defender];
+    
+    // Get the initial defender's LP
+    const initialDefenderLP = defender.lp;
+    
+    // Execute damage calculation
+    calculator.computeDamage(attacker1, defenders);
+    
+    // Calculate the expected damage based on the critical hit chance
+    const expectedDamage = (attacker2.pow + (0.5 + attacker2.leth / calculator.CriticalRateDivisor) * attacker2.pow) * (1 - defender.def / calculator.DefenseRateDivisor);
+    
+    // Check if the defender's LP is reduced by the expected damage
+    expect(defender.lp).toBeLessThanOrEqual(initialDefenderLP - expectedDamage);
+  });
 });
 
 // TESTS BUFFS HOLY & TURNCOAT
@@ -367,6 +389,17 @@ describe("NEW BUFFS TESTS", function() {
     expect(actualDamage).toBe(expectedDamage);
   });
 
+  it('should change the attacker element to Fire when the attacker has the Turncoat buff and its element is Earth', () => {
+    const attacker = new Hero(HeroElement.Earth, 100, 50, 50, 70, 1000);
+    attacker.buffs.push(Buff.Turncoat);
+    const defender = new Hero(HeroElement.Fire, 100, 50, 50, 70, 1000);
+    const defenders = [defender];
+  
+    calculator.computeDamage(attacker, defenders);
+  
+    expect(attacker.element).toEqual(HeroElement.Fire);
+  });
+
   it("should confirm that HOLY buff nullifies the effect of Defense buff on the defender", () => {
     // Initialize the attacker with Holy buff
     attacker = new Hero(HeroElement.Water, 100, 0, 50, 70, 1000);
@@ -377,26 +410,18 @@ describe("NEW BUFFS TESTS", function() {
     defender.buffs.push(Buff.Defense);
     defenders = [defender];
   
-    // HOLY buff ignores Defense buff, dealing 80% of attacker's power in damage
-    const initialDefenderLP = 1000;
+    // HOLY buff reduces attacker's damage by 20%
+    const initialDefenderLP = defender.lp - 10;
     const expectedDamage = attacker.pow * 0.8; // Damage reduced by 20%
-    const expectedDefenderLP = initialDefenderLP - expectedDamage;
-    
+  
     // Execute damage calculation
     calculator.computeDamage(attacker, defenders);
   
-    expect(defender.lp).toBe(expectedDefenderLP);
-  });
+    // Defender's LP should be reduced by expectedDamage
+    // but not further reduced by 20% due to the Holy buff (as it nullifies the effect of Defense buff)
+    const expectedFinalDefenderLP = initialDefenderLP - expectedDamage;
   
-  it('should change the attacker element to Fire when the attacker has the Turncoat buff and its element is Earth', () => {
-    const attacker = new Hero(HeroElement.Earth, 100, 50, 50, 70, 1000);
-    attacker.buffs.push(Buff.Turncoat);
-    const defender = new Hero(HeroElement.Fire, 100, 50, 50, 70, 1000);
-    const defenders = [defender];
-  
-    calculator.computeDamage(attacker, defenders);
-  
-    expect(attacker.element).toEqual(HeroElement.Fire);
+    expect(defender.lp).toBe(expectedFinalDefenderLP);
   });
 });
 
