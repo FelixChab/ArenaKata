@@ -87,7 +87,6 @@ export class ArenaDamageCalculator {
     }
 
     // Damage adv/dis/eq assignement
-    // TODO : condition pour ne pas multiplié les dégâts par les Multipliers avantages / désavatages SI l'attaquant à le buff Holy
     dmg = Math.max(dmg, 0);
     if (dmg > 0) {
       if(adv.find(h => h === attacked)) {

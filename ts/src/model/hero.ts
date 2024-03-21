@@ -5,7 +5,6 @@ export class Hero {
   public buffs: Buff[] = [];
 
   constructor(
-    // Temporaire : retirer readonly pour buff Turncoat
     public element: HeroElement,
     public pow: number,
     public def: number,
