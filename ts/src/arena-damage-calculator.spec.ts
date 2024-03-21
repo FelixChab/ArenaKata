@@ -358,7 +358,16 @@ describe("NEW BUFFS TESTS", function() {
     expect(defender.lp).toBe(expectedDefenderLP);
   });
   
+  it('should change the attacker element to Fire when the attacker has the Turncoat buff and its element is Earth', () => {
+    const attacker = new Hero(HeroElement.Earth, 100, 50, 50, 70, 1000);
+    attacker.buffs.push(Buff.Turncoat);
+    const defender = new Hero(HeroElement.Fire, 100, 50, 50, 70, 1000);
+    const defenders = [defender];
   
+    calculator.computeDamage(attacker, defenders);
+  
+    expect(attacker.element).toEqual(HeroElement.Fire);
+  });
 });
 
 // TESTS ATTRIBUTS HEROS
